@@ -28,41 +28,65 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") }
-        )
+        // Box to constrain width
+        Box(modifier = Modifier.fillMaxWidth(0.85f)) {
+            Column {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation()
-        )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { viewModel.login(email, password) }) {
-            Text("Login")
-        }
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.isBlank()) {
+                            viewModel.setError("Email and password cannot be empty")
+                        } else {
+                            viewModel.login(email, password)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Login")
+                }
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        when (loginState) {
-            is LoginState.Loading -> CircularProgressIndicator()
-            is LoginState.Success -> {
-                Text("Welcome ${(loginState as LoginState.Success).email}")
-                onLoginSuccess((loginState as LoginState.Success).email)
+                // Centered feedback area
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (loginState) {
+                        is LoginState.Loading -> CircularProgressIndicator()
+                        is LoginState.Success -> {
+                            LaunchedEffect(Unit) {
+                                onLoginSuccess((loginState as LoginState.Success).email)
+                            }
+                        }
+                        is LoginState.Error -> Text(
+                            text = (loginState as LoginState.Error).message,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        else -> {} // Idle
+                    }
+                }
             }
-            is LoginState.Error -> Text(
-                (loginState as LoginState.Error).message,
-                color = MaterialTheme.colorScheme.error
-            )
-            else -> {}
         }
     }
 }

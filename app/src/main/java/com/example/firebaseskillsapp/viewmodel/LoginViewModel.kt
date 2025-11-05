@@ -1,11 +1,9 @@
 package com.example.firebaseskillsapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
 
@@ -24,6 +22,10 @@ class LoginViewModel : ViewModel() {
                     _loginState.value = LoginState.Error(task.exception?.localizedMessage ?: "Unknown error")
                 }
             }
+    }
+
+    fun setError(message: String) {
+        _loginState.value = LoginState.Error(message)
     }
 }
 
