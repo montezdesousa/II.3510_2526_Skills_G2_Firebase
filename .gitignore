@@ -34,4 +34,4 @@ google-services.json
 *.hprof
 
 # Env files
-functions\.env.isep-firebase-skills
+.env*
