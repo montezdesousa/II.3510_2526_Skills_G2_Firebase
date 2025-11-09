@@ -6,17 +6,9 @@ This app allows users to:
 - Sign in using Firebase Authentication (email/password).
 - Log out of their account.
 - Add, view, and delete skills stored in Cloud Firestore (user-specific).
+- Get an email notification when a skill is added (using Mailtrap).
 
 It demonstrates a clean **MVVM architecture**, reactive state management with `StateFlow`, and Firebase integration in a Compose app.
-
----
-
-## Features
-
-- **Login & Logout**: Secure authentication using Firebase (email/password)
-- **Firestore CRUD**: Add and remove user-specific skill items.
-- **Reactive UI**: Compose updates automatically with changes in Firestore.
-- **Error handling**: Displays errors when operations fail or permissions are denied.
 
 ---
 
@@ -53,3 +45,21 @@ cd firebase-skills-demo
 4. Save the user.  
 
 > You can now use this email/password to log in from the app and add/view/remove user skills.
+
+### 7 Setup Cloud Functions (Email Notifications)
+
+This project uses **Firebase Cloud Functions** to automatically send an email whenever a new skill is added to a user’s profile. We use **Mailtrap** for email testing. To use this service create an account in [Mailtrap](https://mailtrap.io/).
+
+> Create a sandbox and get the SMTP user and password values.
+
+### 8 Deploy Cloud Functions
+
+To deploy the cloud functions run:
+
+```bash
+cd functions
+npm run deploy
+```
+
+The CLI tool will asking you the values for `MAILTRAP_USER` and `MAILTRAP_PASSWORD`, use the SMTP values you got in the previous section.
+
