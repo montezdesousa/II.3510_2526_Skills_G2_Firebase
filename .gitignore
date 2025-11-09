@@ -32,3 +32,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Env files
+functions\.env.isep-firebase-skills
