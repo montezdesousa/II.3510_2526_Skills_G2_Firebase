@@ -20,9 +20,12 @@ fun AppNavHost() {
             })
         }
 
-        // Add SkillsScreen route
         composable("skills") {
-            SkillsScreen()
+            SkillsScreen(onLogout = {
+                navController.navigate("login") {
+                    popUpTo("skills") { inclusive = true }
+                }
+            })
         }
     }
 }

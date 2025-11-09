@@ -3,6 +3,7 @@ package com.example.firebaseskillsapp.viewmodel
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -17,6 +18,7 @@ class SkillsViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private var listenerRegistration: ListenerRegistration? = null
 
     private val _skillsState = MutableStateFlow<SkillsState>(SkillsState.Idle)
     val skillsState: StateFlow<SkillsState> = _skillsState
@@ -25,22 +27,29 @@ class SkillsViewModel : ViewModel() {
     val skills: StateFlow<List<Skill>> = _skills
 
     init {
-        loadSkills()
+        // Wait for FirebaseAuth to confirm a user before loading skills
+        auth.addAuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                loadSkills(user.uid)
+            } else {
+                listenerRegistration?.remove()
+                _skills.value = emptyList()
+                _skillsState.value = SkillsState.Idle
+            }
+        }
     }
 
-    private fun loadSkills() {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            _skillsState.value = SkillsState.Error("User not authenticated")
-            return
-        }
+    private fun loadSkills(userId: String) {
+        listenerRegistration?.remove()
 
-        db.collection("skills")
+        listenerRegistration = db.collection("skills")
             .whereEqualTo("userId", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     if (error.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                        _skillsState.value = SkillsState.Error("Permission denied. Please update Firestore security rules.")
+                        // Only show this once the user is definitely logged in
+                        _skillsState.value = SkillsState.Error("Permission denied — please try again.")
                     } else {
                         _skillsState.value = SkillsState.Error(error.localizedMessage ?: "Failed to load skills")
                     }
@@ -57,9 +66,7 @@ class SkillsViewModel : ViewModel() {
                         )
                     }
                     _skills.value = skillsList
-                    if (skillsList.isEmpty()) {
-                        _skillsState.value = SkillsState.Idle
-                    }
+                    _skillsState.value = SkillsState.Idle
                 }
             }
     }
@@ -88,7 +95,6 @@ class SkillsViewModel : ViewModel() {
             .add(skill)
             .addOnSuccessListener {
                 _skillsState.value = SkillsState.Success("Skill added successfully!")
-                // Reset state after 2 seconds
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     _skillsState.value = SkillsState.Idle
                 }, 2000)
@@ -111,6 +117,13 @@ class SkillsViewModel : ViewModel() {
             .addOnFailureListener { exception ->
                 _skillsState.value = SkillsState.Error(exception.localizedMessage ?: "Failed to delete skill")
             }
+    }
+
+    fun logout() {
+        listenerRegistration?.remove()
+        auth.signOut()
+        _skills.value = emptyList()
+        _skillsState.value = SkillsState.Success("Logged out successfully")
     }
 
     fun setError(message: String) {

@@ -15,7 +15,8 @@ import com.example.firebaseskillsapp.viewmodel.SkillsState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SkillsScreen(
-    viewModel: SkillsViewModel = viewModel()
+    viewModel: SkillsViewModel = viewModel(),
+    onLogout: () -> Unit = {}
 ) {
     var skillInput by remember { mutableStateOf("") }
     val skillsState by viewModel.skillsState.collectAsState()
@@ -24,8 +25,22 @@ fun SkillsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Skills") }
+                title = { Text("My Skills") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
+                ),
+                actions = {
+                    TextButton(onClick = {
+                        viewModel.logout()
+                        onLogout()
+                    }) {
+                        Text("Logout", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             )
+
         }
     ) { paddingValues ->
         Column(
@@ -34,7 +49,6 @@ fun SkillsScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Input field for new skill
             OutlinedTextField(
                 value = skillInput,
                 onValueChange = { skillInput = it },
