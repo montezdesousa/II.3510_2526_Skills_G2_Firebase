@@ -5,7 +5,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.firebaseskillsapp.screens.LoginScreen
-import com.example.firebaseskillsapp.screens.RegisterScreen // Ensure this is imported
 import com.example.firebaseskillsapp.screens.SkillsScreen
 
 @Composable
@@ -14,29 +13,11 @@ fun AppNavHost() {
 
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("skills") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onNavigateToRegister = {
-                    navController.navigate("register")
+            LoginScreen(onLoginSuccess = {
+                navController.navigate("skills") {
+                    popUpTo("login") { inclusive = true } // remove login from backstack
                 }
-            )
-        }
-
-        composable("register") {
-            RegisterScreen(
-                onRegisterSuccess = { email ->
-                    navController.navigate("skills") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onNavigateToLogin = {
-                    navController.popBackStack()
-                }
-            )
+            })
         }
 
         composable("skills") {

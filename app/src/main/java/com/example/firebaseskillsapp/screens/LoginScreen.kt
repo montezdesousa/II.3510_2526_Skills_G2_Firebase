@@ -14,7 +14,6 @@ import com.example.firebaseskillsapp.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: (String) -> Unit,
-    onNavigateToRegister: () -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
@@ -29,6 +28,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Box to constrain width
         Box(modifier = Modifier.fillMaxWidth(0.85f)) {
             Column {
                 OutlinedTextField(
@@ -65,15 +65,9 @@ fun LoginScreen(
                     Text("Login")
                 }
 
-                TextButton(
-                    onClick = onNavigateToRegister,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Don't have an account? Sign Up")
-                }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Centered feedback area
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -89,7 +83,7 @@ fun LoginScreen(
                             text = (loginState as LoginState.Error).message,
                             color = MaterialTheme.colorScheme.error
                         )
-                        else -> {}
+                        else -> {} // Idle
                     }
                 }
             }
