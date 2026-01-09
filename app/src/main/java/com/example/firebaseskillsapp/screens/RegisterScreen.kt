@@ -8,18 +8,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.firebaseskillsapp.viewmodel.LoginState
-import com.example.firebaseskillsapp.viewmodel.LoginViewModel
+import com.example.firebaseskillsapp.viewmodel.RegisterState
+import com.example.firebaseskillsapp.viewmodel.RegisterViewModel
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: (String) -> Unit,
-    onNavigateToRegister: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+fun RegisterScreen(
+    onRegisterSuccess: (String) -> Unit,
+    onNavigateToLogin: () -> Unit, // Callback to go back to Login
+    viewModel: RegisterViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val loginState by viewModel.loginState.collectAsState()
+    var confirmPassword by remember { mutableStateOf("") }
+    val registerState by viewModel.registerState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -29,6 +30,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Box to constrain width (same as LoginScreen)
         Box(modifier = Modifier.fillMaxWidth(0.85f)) {
             Column {
                 OutlinedTextField(
@@ -50,46 +52,63 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Confirm Password Field
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm Password") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            viewModel.setError("Email and password cannot be empty")
+                        // Validation logic matches your LoginScreen style
+                        if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                            viewModel.setError("All fields are required")
+                        } else if (password != confirmPassword) {
+                            viewModel.setError("Passwords do not match")
                         } else {
-                            viewModel.login(email, password)
+                            viewModel.register(email, password)
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Login")
+                    Text("Register")
                 }
 
+                // Link to return to Login
                 TextButton(
-                    onClick = onNavigateToRegister,
+                    onClick = onNavigateToLogin,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Don't have an account? Sign Up")
+                    Text("Already have an account? Login")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Centered feedback area
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    when (loginState) {
-                        is LoginState.Loading -> CircularProgressIndicator()
-                        is LoginState.Success -> {
+                    when (registerState) {
+                        is RegisterState.Loading -> CircularProgressIndicator()
+                        is RegisterState.Success -> {
                             LaunchedEffect(Unit) {
-                                onLoginSuccess((loginState as LoginState.Success).email)
+                                onRegisterSuccess((registerState as RegisterState.Success).email)
                             }
                         }
-                        is LoginState.Error -> Text(
-                            text = (loginState as LoginState.Error).message,
+                        is RegisterState.Error -> Text(
+                            text = (registerState as RegisterState.Error).message,
                             color = MaterialTheme.colorScheme.error
                         )
-                        else -> {}
+                        else -> {} // Idle
                     }
                 }
             }
